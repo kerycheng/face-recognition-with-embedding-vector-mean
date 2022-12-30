@@ -8,5 +8,9 @@
 請按照以下路徑創建資料夾：  
 ![image](https://imgur.com/n5UbRWh.jpg)  
 
+### 目前功能
+image_preprocessing.py -> 使用MTCNN將LFW做人臉預處理，並將處理好的人臉資料集另存至lfw_crops  
+create_dataset_and_testset.py -> 將lfw_crops按照需求去建立資料庫(dataset)與測試庫(testset)  
+
 ### 參考來源
  * https://github.com/erhwenkuo/face-recognition
