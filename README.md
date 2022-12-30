@@ -4,10 +4,9 @@
 ### 內容大綱
 探討使用facenet所獲得的人臉特徵向量，當把同一人的特徵向量相加之後對於人臉辨識是否會有更好的表現
 
-### 相關使用
- * MTCNN <https://github.com/ShyBigBoy/face-detection-mtcnn>
- * Facenet <https://github.com/davidsandberg/facenet>
- * LFW <http://vis-www.cs.umass.edu/lfw/>
- 
+### 程式路徑相關說明
+請按照以下路徑創建資料夾：  
+![image](https://imgur.com/n5UbRWh.jpg)  
+
 ### 參考來源
  * https://github.com/erhwenkuo/face-recognition
