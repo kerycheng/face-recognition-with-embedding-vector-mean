@@ -2,12 +2,16 @@ import os
 import random
 import shutil
 
+from basic_settings import setup_settings
 
-class dataset_and_testset_preprocessing(object):
+# 建立資料庫（dataset）與測試庫（testset)
+class dataset_and_testset_preprocessing(setup_settings):
     def __init__(self, faces_number, people_number, seed=10):
+        super().__init__()
+
         self.faces_number = faces_number # 人臉張數
         self.people_number = people_number # 人數
-        self.seed = seed
+        self.seed = seed # 種子碼
 
         random.seed(self.seed)
 
@@ -18,24 +22,6 @@ class dataset_and_testset_preprocessing(object):
         self.random_pick_testphoto()
 
         statistical(self.dataset_dir, os.listdir(self.testset_dir))
-
-    def directory_path(self):
-        # 專案的根目錄路徑
-        self.root_dir = os.getcwd()
-        # 訓練/驗證用的資料目錄
-        self.data_path = os.path.join(self.root_dir, "data")
-        # 資料集的目錄
-        self.dataset_path = os.path.join(self.root_dir, "dataset")
-        # 測試集的目錄
-        self.testdata_path = os.path.join(self.root_dir, "testdata")
-        # 模型的資料目錄
-        self.model_path = os.path.join(self.root_dir, "model")
-        # MTCNN的模型
-        self.mtcnn_model_path = os.path.join(self.model_path, "mtcnn")
-        # 訓練/驗證用的圖像資料目錄
-        self.img_in_path = os.path.join(self.data_path, "lfw")
-        # 訓練/驗證用的圖像資料目錄
-        self.img_out_path = os.path.join(self.data_path, "lfw_crops")
 
     # 查看人臉資料集的人臉數量與人數的比例
     def check_dataset(self):
@@ -132,3 +118,7 @@ class statistical(object):
 
         print(f'在庫人臉: {inface}')
         print(f'非在庫人臉: {len(self.testset) - inface}')
+
+if __name__ == '__main__':
+    dtp = dataset_and_testset_preprocessing(4, 100) # (臉的張數, 人數)
+    dtp.run()

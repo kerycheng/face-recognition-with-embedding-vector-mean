@@ -4,25 +4,22 @@ warnings.filterwarnings('ignore')
 
 # Utilities相關函式庫
 from scipy import misc
-import sys
 import os
-import random
 from tqdm import tqdm
 
 # 多維向量處理相關函式庫
 import numpy as np
 
-# 圖像處理相關函式庫
-import cv2
-
-# 深度學習相關函式庫
-import tensorflow as tf
-
 # 專案相關函式庫
 import facenet
 import detect_face
 
-class images_prepeocessing(object):
+from basic_settings import setup_settings
+
+class images_prepeocessing(setup_settings):
+    def __init__(self):
+        super().__init__()
+
     def run(self):
         self.directory_path()
         self.check_directory()
@@ -30,20 +27,6 @@ class images_prepeocessing(object):
         self.mtcnn_parameter()
         self.build_random_key()
         self.face_detect_clip()
-
-    def directory_path(self):
-        # 專案的根目錄路徑
-        self.root_dir = os.getcwd()
-        # 訓練/驗證用的資料目錄
-        self.data_path = os.path.join(self.root_dir, "data")
-        # 模型的資料目錄
-        self.model_path = os.path.join(self.root_dir, "model")
-        # MTCNN的模型
-        self.mtcnn_model_path = os.path.join(self.model_path, "mtcnn")
-        # 訓練/驗證用的圖像資料目錄
-        self.img_in_path = os.path.join(self.data_path, "lfw")
-        # 訓練/驗證用的圖像資料目錄
-        self.img_out_path = os.path.join(self.data_path, "lfw_crops")
 
     # 檢查output資料夾，若無則建立新的並打印出該資料夾有多少人
     def check_directory(self):
@@ -53,22 +36,6 @@ class images_prepeocessing(object):
         self.dataset = facenet.get_dataset(self.img_in_path)
         # 打印看有多少人
         print(f"Total face identities: {len(self.dataset)}")
-
-    def build_mtcnn(self):
-        print('Creating networks and loading parameters')
-        with tf.Graph().as_default():
-            gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
-            sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
-            with sess.as_default():
-                self.pnet, self.rnet, self.onet = detect_face.create_mtcnn(sess, self.mtcnn_model_path)
-
-    def mtcnn_parameter(self):
-        self.minsize = 20  # 最小的臉部的大小
-        self.threshold = [0.4, 0.6, 0.6]  # 三個網絡(P-Net, R-Net, O-Net)的閥值
-        self.factor = 0.709  # scale factor
-
-        self.margin = 33  # 在裁剪人臉時的邊框margin
-        self.image_size = 182  # 160 + 22
 
     def build_random_key(self):
         # 將一個隨機key添加到圖像檔名以允許使用多個進程進行人臉對齊
@@ -153,3 +120,7 @@ class images_prepeocessing(object):
 
         print('Total number of images: %d' % nrof_images_total)
         print('Number of successfully aligned images: %d' % nrof_successfully_aligned)
+
+if __name__ == '__main__':
+    ip = images_prepeocessing()
+    ip.run()
