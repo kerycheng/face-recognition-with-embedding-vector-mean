@@ -1,15 +1,22 @@
+# 屏蔽Jupyter的warning訊息
+import warnings
+warnings.filterwarnings('ignore')
+
 # Utilities相關函式庫
-import imageio
-from PIL import Image
+from scipy import misc
+import sys
 import os
+import random
 from tqdm import tqdm
 
 # 多維向量處理相關函式庫
 import numpy as np
 
+# 圖像處理相關函式庫
+import cv2
+
 # 深度學習相關函式庫
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow as tf
 
 # 專案相關函式庫
 import facenet
@@ -85,15 +92,15 @@ class images_prepeocessing(object):
                     nrof_images_total += 1
                     filename = os.path.splitext(os.path.split(image_path)[1])[0]  # 取得圖像檔名
                     output_filename = os.path.join(output_class_dir, filename + '.png')  # 設定輸出的圖像檔名
-                    print(image_path)
+                    # print(image_path)
 
                     if not os.path.exists(output_filename):
                         try:
-                            img = imageio.imread(image_path)  # 讀進圖檔
-                            print('read data dimension: ', img.ndim)
+                            img = misc.imread(image_path)  # 讀進圖檔
+                            # print('read data dimension: ', img.ndim)
                         except (IOError, ValueError, IndexError) as e:
                             errorMessage = '{}: {}'.format(image_path, e)
-                            print(errorMessage)
+                            # print(errorMessage)
                         else:
                             # 將圖檔轉換成numpy array (height, widith, color_channels)
                             if img.ndim < 2:
@@ -104,12 +111,13 @@ class images_prepeocessing(object):
                                 img = facenet.to_rgb(img)
                                 print('to_rgb data dimension: ', img.ndim)
                             img = img[:, :, 0:3]
-                            print('after data dimension: ', img.ndim)
+                            # print('after data dimension: ', img.ndim)
 
                             # 使用MTCNN來偵測人臉在圖像中的位置
-                            bounding_boxes, _ = detect_face.detect_face(img, self.minsize, self.pnet, self.rnet, self.onet, self.threshold, self.factor)
+                            bounding_boxes, _ = detect_face.detect_face(img, self.minsize, self.pnet, self.rnet, self.onet, self.threshold,
+                                                                        self.factor)
                             nrof_faces = bounding_boxes.shape[0]  # 偵測到的人臉總數
-                            print('detected_face: %d' % nrof_faces)
+                            # print('detected_face: %d' % nrof_faces)
                             if nrof_faces > 0:
                                 # 當有偵測到多個人臉的時候, 我們希望從中找到主要置中位置的人臉
                                 det = bounding_boxes[:, 0:4]
@@ -133,14 +141,14 @@ class images_prepeocessing(object):
 
                                 # 進行裁剪以及大小的轉換
                                 cropped_temp = img[bb_temp[1]:bb_temp[3], bb_temp[0]:bb_temp[2], :]
-                                scaled_temp = np.array(Image.fromarray(cropped_temp).resize((self.image_size, self.image_size), Image.BILINEAR))
+                                scaled_temp = misc.imresize(cropped_temp, (self.image_size, self.image_size), interp='bilinear')
 
                                 nrof_successfully_aligned += 1
-                                imageio.imsave(output_filename, scaled_temp)  # 儲存處理過的圖像
-                                text_file.write(
-                                    '%s %d %d %d %d\n' % (output_filename, bb_temp[0], bb_temp[1], bb_temp[2], bb_temp[3]))
+                                misc.imsave(output_filename, scaled_temp)  # 儲存處理過的圖像
+                                text_file.write('%s %d %d %d %d\n' % (
+                                output_filename, bb_temp[0], bb_temp[1], bb_temp[2], bb_temp[3]))
                             else:
-                                print('Unable to align "%s"' % image_path)
+                                # print('Unable to align "%s"' % image_path)
                                 text_file.write('%s\n' % (output_filename))
 
         print('Total number of images: %d' % nrof_images_total)
