@@ -13,7 +13,8 @@
 ### 目前功能
 image_preprocessing.py -> 使用MTCNN將LFW做人臉預處理，並將處理好的人臉資料集另存至lfw_crops  
 create_dataset_and_testset.py -> 將lfw_crops按照需求去建立資料庫(dataset)與測試庫(testset)  
-create_dataframe.py ->計算並創建有關資料庫的數據資料表
+create_dataframe.py -> 計算並創建有關資料庫的dataframe並存放在data/dataset.json  
+basic_settings.py -> 宣告目錄，建立facenet、MTCNN模型。計算方法相關
 
 
 ### 參考來源
