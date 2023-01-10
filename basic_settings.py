@@ -73,8 +73,8 @@ class calculation(setup_settings):
         return np.divide(emb, np.sqrt(np.maximum(np.sum(np.square(emb)), epsilon)))
 
     # 計算歐式距離
-    def euclidean_distance(self, emb1, emb2):  # 計算歐式距離
-        return np.sqrt(np.sum(np.square(emb1 - emb2)))
+    def euclidean_distance(self, emb1, emb2):
+        return np.sqrt(np.sum((emb1 - emb2) ** 2))
 
     # 計算內積向量
     def innerproduct(self, emb1, emb2):
@@ -112,51 +112,57 @@ class calculation(setup_settings):
 
     # 自身特徵向量與自身特徵向量比對
     def self_emb2emb_list(self):
+        # 歐式距離自身特徵向量互比
         self.eu_self_emb2emb = []
+        # 內積向量自身特徵向量互比
         self.ip_self_emb2emb = []
 
         for embs in self.embs_list:
+            # 遍歷自身所有特徵向量
             eul = [self.euclidean_distance(embs[i], embs[j]) for (i, j) in itertools.combinations(range(len(embs)), 2)]
             ipl = [self.innerproduct(embs[i], embs[j]) for (i, j) in itertools.combinations(range(len(embs)), 2)]
+
+            # 最短距離、最遠距離、標準差距離、平均距離
             self.eu_self_emb2emb.append((min(eul), max(eul), np.std(eul, ddof=1), np.mean(eul)))
             self.ip_self_emb2emb.append((min(ipl), max(ipl), np.std(ipl, ddof=1), np.mean(ipl)))
-            # 最短距離、最遠距離、標準差距離、平均距離
 
     # 自身特徵向量與他人特徵向量比對
     def other_emb2emb_list(self):
+        # 歐式距離與其他人特徵向量互比
         self.eu_other_emb2emb = []
+        # 內積向量與其他人特徵向量互比
         self.ip_other_emb2emb = []
-        eu_self_emb2emb_min = [self.eu_self_emb2emb[i][0] for i in range(len(self.eu_self_emb2emb))]
-        ip_self_emb2emb_min = [self.ip_self_emb2emb[i][0] for i in range(len(self.ip_self_emb2emb))]
 
         for i in range(len(self.embs_list)):
             # eoed = eu_other_emb2emb_distance
             # ioed = ip_other_emb2emb_distance
             eoed = []
             ioed = []
-
             for j in range(len(self.embs_list[i])):
+                # 若是和自己比較則跳過
+                if i == j: continue
+
+                # 與其他人的特徵向量進行計算
                 eul = min([self.euclidean_distance(self.embs_list[i][n], self.embs_list[j][m])
                            for (n, m) in itertools.combinations(range(len(self.embs_list[i])), 2)])
+                # 與每個人比完之後得出的最短距離存起來
+                eoed.append(eul)
+
+                # 與其他人的特徵向量進行計算
                 ipl = min([self.innerproduct(self.embs_list[i][n], self.embs_list[j][m])
                            for (n, m) in itertools.combinations(range(len(self.embs_list[i])), 2)])
-                # 把min當作該人的代表向量
-                if eul == eu_self_emb2emb_min[i]:  # 如果 ddl == 自己的 min_ed 則 pass
-                    pass
-                else:
-                    eoed.append(eul)
+                # 與每個人比完之後得出的最小內積存起來
+                ioed.append(ipl)
 
-                if ipl == ip_self_emb2emb_min[i]:  # 如果 ddl == 自己的 min_ed 則 pass
-                    pass
-                else:
-                    ioed.append(ipl)
-
+            # 最短距離、最遠距離、標準差距離、平均距離
             self.eu_other_emb2emb.append((min(eoed), max(eoed), np.std(eoed, ddof=1), np.mean(eoed)))
             self.ip_other_emb2emb.append((min(ioed), max(ioed), np.std(ioed, ddof=1), np.mean(ioed)))
 
     # 自身代表向量(vector mean)與自身特徵向量比對
     def self_vm2emb_list(self):
+        # 歐式距離自身代表向量與自身特徵向量比較
         self.eu_self_vm2emb = []
+        # 內積向量自身代表向量與自身特徵向量比較
         self.ip_self_vm2emb = []
 
         for i in range(len(self.vector_mean_list)):
@@ -166,38 +172,42 @@ class calculation(setup_settings):
             isvd = []
 
             for j in range(len(self.embs_list[i])):
+                # 遍歷自身所有特徵向量
                 eul = [self.euclidean_distance(self.vector_mean_list[i], self.embs_list[i][j])]
                 ipl = [self.innerproduct(self.vector_mean_list[i], self.embs_list[i][j])]
                 esvd.append(eul)
                 isvd.append(ipl)
+
+            # 最短距離、最遠距離、標準差距離、平均距離
             self.eu_self_vm2emb.append(((min(esvd)[0]), (max(esvd)[0]), np.std(esvd, ddof=1), np.mean(esvd)))
             self.ip_self_vm2emb.append(((min(isvd)[0]), (max(isvd)[0]), np.std(isvd, ddof=1), np.mean(isvd)))
 
-    # 自身代表向量禹他人特徵向量比對
+    # 自身代表向量與他人特徵向量比對
     def other_vm2emb_list(self):
+        # 歐式距離自身代表向量與他人特徵向量比較
         self.eu_other_vm2emb = []
+        # 內積向量自身代表向量與他人特徵向量比較
         self.ip_other_vm2emb = []
-        eu_self_vector_mean_min = [(self.eu_self_vm2emb[i][0]) for i in range(len(self.eu_self_vm2emb))]
-        ip_self_vector_mean_min = [(self.ip_self_vm2emb[i][0]) for i in range(len(self.ip_self_vm2emb))]
 
         for i in range(len(self.vector_mean_list)):
             # eu_other_vm2emb_distance
             # ip_other_vm2emb_distance
             eovd = []
             iovd = []
-            for j in range(len(self.embs_list)):
+            for j in range(len(self.embs_list[i])):
+                # 若是和自己比較則跳過
+                if i == j: continue
+
+                # 與其他人的特徵向量進行計算
                 eul = min([self.euclidean_distance(self.vector_mean_list[i], self.embs_list[j][m]) for m in range(len(self.embs_list[i]))])
+                # 與每個人比完之後得出的最短距離存起來
+                eovd.append(eul)
+
+                # 與其他人的內積向量進行計算
                 ipl = min([self.innerproduct(self.vector_mean_list[i], self.embs_list[j][m]) for m in range(len(self.embs_list[i]))])
+                # 與每個人比完之後得出的最小內積存起來
+                iovd.append(ipl)
 
-                if eul == eu_self_vector_mean_min[i]:
-                    pass
-                else:
-                    eovd.append(eul)
-
-                if ipl == ip_self_vector_mean_min[i]:
-                    pass
-                else:
-                    iovd.append(ipl)
-
+            # 最短距離、最遠距離、標準差距離、平均距離
             self.eu_other_vm2emb.append((min(eovd), max(eovd), np.mean(eovd), np.std(eovd, ddof=1)))
             self.ip_other_vm2emb.append((min(iovd), max(iovd), np.mean(iovd), np.std(iovd, ddof=1)))
